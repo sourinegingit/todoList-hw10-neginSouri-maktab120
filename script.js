@@ -13,10 +13,19 @@ function renderTasks(tasks) {
   const DoneTasksContainer = document.getElementById("DoneTasks");
 
   tasks.map((task) => {
-    const taskCard = createTaskCard(task);
+   const taskCard = createTaskCard(task);
+
+    if(task.status==="inProgress"){
+inProgressTasksContainer.appendChild(taskCard);
+    }else if(task.status==="doingTasks"){
     doingTasksContainer.appendChild(taskCard);
-    inProgressTasksContainer.appendChild(taskCard);
-    DoneTasksContainer.appendChild(taskCard);
+
+    }else {
+            DoneTasksContainer.appendChild(taskCard);
+
+    }
+ 
+    
   });
 }
 function createTaskCard(task) {
@@ -29,14 +38,41 @@ function createTaskCard(task) {
           <p>performer :${task.performer}</p>
           <button onclick="openEditModal(${task.id})">✏️ Edit</button>
           <button onclick="deleteTask(${task.id})">🗑️ Delete</button>
-    
+          <select >
+            <option value="inProgress">inProgress</option>
+            <option value="doing" >doingTasks</option>
+            <option value="done">DoneTasks</option>
+        </select>
       `;
   return card;
 }
 
+
+async function saveTask(e) {
+    
+    e.preventDefault();
+    const newTask = {
+        title: document.getElementById("taskTitle").value,
+        description: document.getElementById("taskDescription").value,
+        dueDate: document.getElementById("taskDueDate").value,
+        performer: document.getElementById("taskPerformer").value,
+        status: document.getElementById("taskStatus").value,
+      };
+      await fetch(apiUrl,{
+        method:"POST",
+        headers:{"Content-Type": "application/json",},
+        body:JSON.stringify(newTask)
+      })
+      fetchTasks()
+      closeTaskModal()
+}
+
 function openTaskModal() {
   document.getElementById("taskForm").reset();
+  document.getElementById("taskForm").onsubmit=saveTask;
+
   document.getElementById("taskModal").style.display = "block";
+  
 }
 
 function closeTaskModal() {
