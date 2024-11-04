@@ -12,20 +12,20 @@ function renderTasks(tasks) {
   const doingTasksContainer = document.getElementById("doingTasks");
   const DoneTasksContainer = document.getElementById("DoneTasks");
 
+  inProgressTasksContainer.innerHTML = "";
+  doingTasksContainer.innerHTML = "";
+  DoneTasksContainer.innerHTML = "";
+
   tasks.map((task) => {
-   const taskCard = createTaskCard(task);
+    const taskCard = createTaskCard(task);
 
-    if(task.status==="inProgress"){
-inProgressTasksContainer.appendChild(taskCard);
-    }else if(task.status==="doingTasks"){
-    doingTasksContainer.appendChild(taskCard);
-
-    }else {
-            DoneTasksContainer.appendChild(taskCard);
-
+    if (task.status === "inprogress") {
+      inProgressTasksContainer.appendChild(taskCard);
+    } else if (task.status === "doing") {
+      doingTasksContainer.appendChild(taskCard);
+    } else {
+      DoneTasksContainer.appendChild(taskCard);
     }
- 
-    
   });
 }
 function createTaskCard(task) {
@@ -38,41 +38,59 @@ function createTaskCard(task) {
           <p>performer :${task.performer}</p>
           <button onclick="openEditModal(${task.id})">✏️ Edit</button>
           <button onclick="deleteTask(${task.id})">🗑️ Delete</button>
-          <select >
-            <option value="inProgress">inProgress</option>
-            <option value="doing" >doingTasks</option>
-            <option value="done">DoneTasks</option>
-        </select>
+           <select id="status-select-${task.id}" onchange="moveTask(${task.id})">
+        <option value="inprogress" ${task.status === "inProgress" ? "selected" : ""}>In Progress</option>
+        <option value="doing" ${task.status === "doing" ? "selected" : ""}>Doing Tasks</option>
+        <option value="done" ${task.status === "done" ? "selected" : ""}>Done Tasks</option>
+      </select>
       `;
   return card;
 }
 
-
 async function saveTask(e) {
-    
-    e.preventDefault();
-    const newTask = {
-        title: document.getElementById("taskTitle").value,
-        description: document.getElementById("taskDescription").value,
-        dueDate: document.getElementById("taskDueDate").value,
-        performer: document.getElementById("taskPerformer").value,
-        status: document.getElementById("taskStatus").value,
-      };
-      await fetch(apiUrl,{
-        method:"POST",
-        headers:{"Content-Type": "application/json",},
-        body:JSON.stringify(newTask)
-      })
-      fetchTasks()
-      closeTaskModal()
+  e.preventDefault();
+  const newTask = {
+    title: document.getElementById("taskTitle").value,
+    description: document.getElementById("taskDescription").value,
+    dueDate: document.getElementById("taskDueDate").value,
+    performer: document.getElementById("taskPerformer").value,
+    status: document.getElementById("taskStatus").value,
+  };
+  await fetch(apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newTask),
+  });
+  fetchTasks();
+  closeTaskModal();
+}
+
+async function moveTask(taskId) {
+  const selectElement = document.getElementById(`status-select-${taskId}`);
+  console.log(selectElement);
+  
+  const newStatus = selectElement.value; //we can  Get the selected value from the <select>
+  console.log(newStatus);
+
+  const task = await fetch(`${apiUrl}/${taskId}`).then((res) => res.json());
+  task.status = newStatus;
+
+  await fetch(`${apiUrl}/${taskId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(task),
+  });
+
+  fetchTasks();
 }
 
 function openTaskModal() {
   document.getElementById("taskForm").reset();
-  document.getElementById("taskForm").onsubmit=saveTask;
+  document.getElementById("taskForm").onsubmit = saveTask;
 
   document.getElementById("taskModal").style.display = "block";
-  
 }
 
 function closeTaskModal() {
