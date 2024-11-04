@@ -86,6 +86,15 @@ async function moveTask(taskId) {
   fetchTasks();
 }
 
+
+
+
+async function deleteTask(taskId) {
+    await fetch(`${apiUrl}/${taskId}`, { method: "DELETE" });
+    fetchTasks();
+  }
+
+
 function openTaskModal() {
   document.getElementById("taskForm").reset();
   document.getElementById("taskForm").onsubmit = saveTask;
@@ -96,5 +105,7 @@ function openTaskModal() {
 function closeTaskModal() {
   document.getElementById("taskModal").style.display = "none";
 }
+
+
 
 fetchTasks();
