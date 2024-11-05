@@ -93,7 +93,16 @@ async function deleteTask(taskId) {
     await fetch(`${apiUrl}/${taskId}`, { method: "DELETE" });
     fetchTasks();
   }
+  
 
+  document.getElementById("search").addEventListener("input", (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const tasks = document.querySelectorAll(".task-card");
+    tasks.forEach((task) => {
+      const title = task.querySelector("h3").textContent.toLowerCase();
+      task.style.display = title.includes(searchTerm) ? "block" : "none";
+    });
+  });
 
 function openTaskModal() {
   document.getElementById("taskForm").reset();
