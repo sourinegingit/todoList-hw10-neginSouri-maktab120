@@ -21,10 +21,16 @@ function renderTasks(tasks) {
 
     if (task.status === "inprogress") {
       inProgressTasksContainer.appendChild(taskCard);
+      task.status === "inprogress"
+      createTaskCard(task)
     } else if (task.status === "doing") {
       doingTasksContainer.appendChild(taskCard);
+      task.status === "doing"
+      createTaskCard(task)
     } else {
       DoneTasksContainer.appendChild(taskCard);
+      task.status === "done"
+      createTaskCard(task)
     }
   });
 }
@@ -93,16 +99,61 @@ async function deleteTask(taskId) {
     await fetch(`${apiUrl}/${taskId}`, { method: "DELETE" });
     fetchTasks();
   }
+
+
+
+// Open the task modal for editing
+function openEditModal(taskId) {
+  // Fetch the task data and populate the modal fields
+  fetch(`${apiUrl}/${taskId}`)
+    .then((response) => response.json())
+    .then((task) => {
+      document.getElementById("taskTitle").value = task.title;
+      document.getElementById("taskDescription").value = task.description;
+      document.getElementById("taskDueDate").value = task.dueDate;
+      document.getElementById("taskPerformer").value = task.performer;
+      document.getElementById("taskStatus").value = task.status;
+      document.getElementById("taskForm").onsubmit = (e) =>
+        updateTask(e, taskId);
+      document.getElementById("taskModal").style.display = "block";
+    });
+}
+
+
+  async function updateTask(event, taskId) {
+    event.preventDefault();
+    const updatedTask = {
+      title: document.getElementById("taskTitle").value,
+      description: document.getElementById("taskDescription").value,
+      dueDate: document.getElementById("taskDueDate").value,
+      performer: document.getElementById("taskPerformer").value,
+      status: document.getElementById("taskStatus").value,
+    };
+    await fetch(`${apiUrl}/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedTask),
+    });
+    fetchTasks();
+    closeTaskModal();
+  }
+
+  
   
 
-  document.getElementById("search").addEventListener("input", (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    const tasks = document.querySelectorAll(".task-card");
-    tasks.forEach((task) => {
-      const title = task.querySelector("h3").textContent.toLowerCase();
-      task.style.display = title.includes(searchTerm) ? "block" : "none";
-    });
+document.getElementById("search").addEventListener("input", (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  const tasks = document.querySelectorAll(".task-card");
+  tasks.forEach((task) => {
+    const title = task.querySelector("h3").textContent.toLowerCase();
+    task.style.display = title.includes(searchTerm) ? "block" : "none";
   });
+});
+
+
+
 
 function openTaskModal() {
   document.getElementById("taskForm").reset();
